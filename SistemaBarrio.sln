@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36908.2 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SistemaBarrio", "SistemaBarrio\SistemaBarrio.csproj", "{4CB61E06-BC4D-4C07-8D55-7E14BE667C5E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CB61E06-BC4D-4C07-8D55-7E14BE667C5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CB61E06-BC4D-4C07-8D55-7E14BE667C5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CB61E06-BC4D-4C07-8D55-7E14BE667C5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CB61E06-BC4D-4C07-8D55-7E14BE667C5E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B6845AC3-CB85-419D-8C59-2E2DD08A5FE9}
+	EndGlobalSection
+EndGlobal
