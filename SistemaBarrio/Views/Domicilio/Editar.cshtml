@@ -1,0 +1,19 @@
+﻿@using SistemaBarrio.ViewModels.Domicilios
+@model DomicilioViewModel;
+
+@{
+    ViewData["Title"] = "Editar domicilio";
+}
+
+<div class="container mt-4" style="max-width: 480px">
+    <h4 class="mb-4">Editar domicilio</h4>
+
+    <form asp-action="Editar" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <partial name="_Formulario" model="Model" />
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>

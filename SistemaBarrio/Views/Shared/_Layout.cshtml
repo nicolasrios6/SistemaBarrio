@@ -33,6 +33,21 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            @* @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mt-3">
+                    @TempData["Exito"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mt-3">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            } *@
+
             @RenderBody()
         </main>
     </div>
@@ -45,6 +60,14 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.querySelectorAll('.alert').forEach(function (alerta) {
+            setTimeout(function () {
+                var bsAlert = bootstrap.Alert.getOrCreateInstance(alerta);
+                bsAlert.close();
+            }, 4000);
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

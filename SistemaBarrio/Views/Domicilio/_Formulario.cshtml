@@ -1,0 +1,14 @@
+﻿@using SistemaBarrio.ViewModels.Domicilios
+@model DomicilioViewModel;
+
+<div class="mb-3">
+    <label asp-for="Manzana" class="form-label"></label>
+    <input asp-for="Manzana" class="form-control" placeholder="Ej: A" />
+    <span asp-validation-for="Manzana" class="text-danger small"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Casa" class="form-label"></label>
+    <input asp-for="Casa" class="form-control" inputmode="numeric" placeholder="Ej: 12" />
+    <span asp-validation-for="Casa" class="text-danger small"></span>
+</div>
