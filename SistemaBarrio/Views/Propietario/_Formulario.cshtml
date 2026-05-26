@@ -1,0 +1,30 @@
+﻿@using SistemaBarrio.ViewModels.Propietarios;
+@model PropietarioViewModel;
+
+<div class="mb-3">
+    <label asp-for="Nombre" class="form-label"></label>
+    <input asp-for="Nombre" class="form-control" placeholder="Ej: Juan" />
+    <span asp-validation-for="Nombre" class="text-danger small"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Apellido" class="form-label"></label>
+    <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
+    <span asp-validation-for="Apellido" class="text-danger small"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Telefono" class="form-label">
+        Teléfono
+    </label>
+    <input asp-for="Telefono" class="form-control" placeholder="Ej: 2614000000" />
+    <span asp-validation-for="Telefono" class="text-danger small"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="DomicilioId" class="form-label"></label>
+    <select asp-for="DomicilioId" asp-items="Model.Domicilios" class="form-select">
+        <option value="">-- Seleccionar domicilio --</option>
+    </select>
+    <span asp-validation-for="DomicilioId" class="text-danger small"></span>
+</div>

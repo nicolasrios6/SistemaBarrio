@@ -1,0 +1,110 @@
+﻿@model IEnumerable<SistemaBarrio.Models.Propietario>
+
+@{
+    ViewData["Title"] = "Propietarios";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Propietarios</h4>
+        <a asp-action="Crear" class="btn btn-primary">+ Nuevo propietario</a>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Apellido y nombre</th>
+                <th>Teléfono</th>
+                <th>Domicilio</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr class="@(!p.Activo ? "table-secondary text-muted" : "")">
+                    <td>@p.Apellido, @p.Nombre</td>
+                    <td>@(p.Telefono ?? "-")</td>
+                    <td>
+                        Manzana @(p.Domicilio.Manzana ?? "-") - Casa @p.Domicilio.Casa
+                    </td>
+                    <td>
+                        @if (p.Activo)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Editar" asp-route-id="@p.Id"
+                           class="btn btn-sm btn-outline-secondary">Editar</a>
+
+                        <button type="button"
+                                class="btn btn-sm @(p.Activo ? "btn-outline-danger" : "btn-outline-success")"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalToggle"
+                                data-id="@p.Id"
+                                data-nombre="@p.Apellido, @p.Nombre"
+                                data-activo="@p.Activo.ToString().ToLower()">
+                            @(p.Activo ? "Desactivar" : "Activar")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal confirmar activar/desactivar -->
+<div class="modal fade" id="modalToggle" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalToggleTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalToggleTexto"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <form id="formToggle" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn" id="modalToggleBtn">Confirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('modalToggle')
+            .addEventListener('show.bs.modal', function (e) {
+                const btn     = e.relatedTarget;
+                const id      = btn.getAttribute('data-id');
+                const nombre  = btn.getAttribute('data-nombre');
+                const activo  = btn.getAttribute('data-activo') === 'true';
+
+                document.getElementById('modalToggleTitulo').textContent =
+                    activo ? 'Desactivar propietario' : 'Activar propietario';
+
+                document.getElementById('modalToggleTexto').textContent =
+                    activo
+                        ? `¿Desactivar a ${nombre}? Ya no aparecerá como propietario activo.`
+                        : `¿Activar a ${nombre}? Volverá a aparecer como propietario activo.`;
+
+                const btnConfirmar = document.getElementById('modalToggleBtn');
+                btnConfirmar.textContent  = activo ? 'Desactivar' : 'Activar';
+                btnConfirmar.className    = activo ? 'btn btn-danger' : 'btn btn-success';
+
+                document.getElementById('formToggle').action =
+                    '/Propietario/ToggleActivo/' + id;
+            });
+    </script>
+}
