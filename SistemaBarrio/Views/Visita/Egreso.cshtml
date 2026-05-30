@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Registrar egreso";
+}
+
+<div class="container mt-4" style="max-width: 540px">
+    <h4 class="mb-4">Registrar egreso</h4>
+
+    @* ── PASO 1: Buscar por DNI ───────────────────────────── *@
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">DNI del visitante</label>
+            <div class="input-group">
+                <input type="text" id="inputDni" class="form-control"
+                       placeholder="Ej: 35123456" inputmode="numeric" maxlength="8" />
+                <button type="button" id="btnBuscar" class="btn btn-primary">Buscar</button>
+            </div>
+            <div id="mensajeBusqueda" class="mt-2 small"></div>
+        </div>
+    </div>
+
+    @* ── PASO 2: Visita encontrada ────────────────────────── *@
+    <div id="seccionVisita" class="d-none">
+        <div class="card mb-3 border-danger">
+            <div class="card-header bg-danger text-white">Visita activa encontrada</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Visitante:</strong> <span id="textoNombre"></span></p>
+                <p class="mb-1"><strong>Domicilio:</strong> <span id="textoDomicilio"></span></p>
+                <p class="mb-1"><strong>Propietario:</strong> <span id="textoPropietario"></span></p>
+                <p class="mb-1"><strong>Ingresó:</strong> <span id="textoHoraIngreso"></span></p>
+                <p class="mb-0"><strong>Tiempo adentro:</strong> <span id="textoTiempo"></span></p>
+            </div>
+        </div>
+
+        <form method="post" asp-action="ConfirmarEgreso">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="hiddenVisitaId" name="visitaId" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Confirmar egreso</button>
+                <button type="button" id="btnCancelar"
+                        class="btn btn-outline-secondary">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const btnBuscar       = document.getElementById('btnBuscar');
+        const inputDni        = document.getElementById('inputDni');
+        const mensajeBusqueda = document.getElementById('mensajeBusqueda');
+        const seccionVisita   = document.getElementById('seccionVisita');
+
+        btnBuscar.addEventListener('click', async function () {
+            const dni = inputDni.value.trim();
+
+            if (!dni) {
+                mensajeBusqueda.innerHTML = '<span class="text-danger">Ingresá un DNI</span>';
+                return;
+            }
+
+            btnBuscar.disabled    = true;
+            btnBuscar.textContent = 'Buscando...';
+
+            try {
+                const response = await fetch(`/Visita/BuscarVisitaActiva?dni=${dni}`);
+                const data     = await response.json();
+
+                seccionVisita.classList.add('d-none');
+
+                if (!data.encontrado) {
+                    mensajeBusqueda.innerHTML =
+                        `<span class="text-danger">${data.mensaje}</span>`;
+                    return;
+                }
+
+                document.getElementById('textoNombre').textContent     = data.nombreVisitante;
+                document.getElementById('textoDomicilio').textContent  = data.domicilio;
+                document.getElementById('textoPropietario').textContent = data.propietario;
+                document.getElementById('textoHoraIngreso').textContent = data.horaIngreso;
+                document.getElementById('textoTiempo').textContent     = data.tiempoAdentro;
+                document.getElementById('hiddenVisitaId').value        = data.visitaId;
+
+                seccionVisita.classList.remove('d-none');
+                mensajeBusqueda.innerHTML = '';
+
+            } catch {
+                mensajeBusqueda.innerHTML =
+                    '<span class="text-danger">Error al buscar. Intentá de nuevo.</span>';
+            } finally {
+                btnBuscar.disabled    = false;
+                btnBuscar.textContent = 'Buscar';
+            }
+        });
+
+        inputDni.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnBuscar.click();
+            }
+        });
+
+        document.getElementById('btnCancelar').addEventListener('click', function () {
+            inputDni.value            = '';
+            mensajeBusqueda.innerHTML = '';
+            seccionVisita.classList.add('d-none');
+        });
+    </script>
+}

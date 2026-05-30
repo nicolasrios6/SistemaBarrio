@@ -43,7 +43,7 @@
                     <td>
                         @if (d.Propietarios.Any())
                         {
-                            @string.Join(", ", d.Propietarios.Select(p => $"{p.Apellido}, {p.Nombre}"))
+                            @string.Join(", ", d.Propietarios.Select(p => $"{p.Apellido} {p.Nombre}"))
                         }
                         else
                         {

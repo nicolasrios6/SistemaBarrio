@@ -24,7 +24,7 @@
             @foreach (var p in Model)
             {
                 <tr class="@(!p.Activo ? "table-secondary text-muted" : "")">
-                    <td>@p.Apellido, @p.Nombre</td>
+                    <td>@p.Apellido @p.Nombre</td>
                     <td>@(p.Telefono ?? "-")</td>
                     <td>
                         Manzana @(p.Domicilio.Manzana ?? "-") - Casa @p.Domicilio.Casa

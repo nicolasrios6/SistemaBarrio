@@ -1,0 +1,160 @@
+﻿@model IEnumerable<Visita>;
+
+@{
+    ViewData["Title"] = "Visitas en curso";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Visitas en curso</h4>
+            <span class="text-muted small">@Model.Count() visitante(s) dentro del barrio ahora</span>
+        </div>
+        <a asp-action="Registrar" class="btn btn-primary">+ Registrar ingreso</a>
+    </div>
+
+    @* ── Egreso rápido por DNI ──────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Registrar egreso</label>
+            <div class="input-group mb-2">
+                <input type="text" id="inputDniEgreso" class="form-control"
+                       placeholder="Ingresá el DNI del visitante que sale"
+                       inputmode="numeric" maxlength="8" autocomplete="off" />
+                <button type="button" id="btnBuscarEgreso" class="btn btn-outline-secondary">
+                    Buscar
+                </button>
+            </div>
+            <div id="mensajeEgreso" class="small mt-2"></div>
+            <div id="resultadoEgreso" class="mt-2"></div>
+        </div>
+    </div>
+    @Html.AntiForgeryToken()
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <p class="mb-0">No hay visitas en curso en este momento</p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Visitante</th>
+                    <th>DNI</th>
+                    <th>Domicilio</th>
+                    <th>Propietario</th>
+                    <th>Ingresó</th>
+                    <th>Tiempo adentro</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in Model)
+                {
+                    var minutos = (int)(DateTime.Now - v.FechaHoraIngreso).TotalMinutes;
+                    var tiempoTexto = minutos < 60
+                    ? $"{minutos} min"
+                    : $"{minutos / 60}h {minutos % 60}min";
+                    var tiempoClase = minutos > 120 ? "text-danger fw-semibold" : "";
+
+                    <tr>
+                        <td>@v.Visitante.Apellido, @v.Visitante.Nombre</td>
+                        <td>@v.Visitante.Dni</td>
+                        <td>Manzana @(v.Domicilio.Manzana ?? "-") - Casa @v.Domicilio.Casa</td>
+                        <td>@v.Propietario.Apellido, @v.Propietario.Nombre</td>
+                        <td>@v.FechaHoraIngreso.ToString("HH:mm")</td>
+                        <td class="@tiempoClase">@tiempoTexto</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const inputDni     = document.getElementById('inputDniEgreso');
+        const btnBuscar    = document.getElementById('btnBuscarEgreso');
+        const resultadoDiv = document.getElementById('resultadoEgreso');
+        const mensajeDiv   = document.getElementById('mensajeEgreso');
+
+        async function buscarVisitaActiva() {
+            const dni = inputDni.value.trim();
+
+            if (!dni) {
+                mensajeDiv.innerHTML = '<span class="text-danger">Ingresá un DNI</span>';
+                resultadoDiv.innerHTML = '';
+                return;
+            }
+
+            btnBuscar.disabled    = true;
+            btnBuscar.textContent = 'Buscando...';
+
+            try {
+                const response = await fetch(`/Visita/BuscarVisitaActiva?dni=${dni}`);
+                const data     = await response.json();
+
+                resultadoDiv.innerHTML = '';
+                mensajeDiv.innerHTML   = '';
+
+                if (!data.encontrado) {
+                    mensajeDiv.innerHTML = `<span class="text-danger">${data.mensaje}</span>`;
+                    return;
+                }
+
+                // Construir el HTML del resultado dinámicamente
+                // El token antiforgery ya está en la página, lo tomamos del DOM
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
+                        <div>
+                            <p class="mb-1"><strong>${data.nombreVisitante}</strong></p>
+                            <p class="mb-1 small">
+                                <span class="text-muted">Domicilio:</span> ${data.domicilio}
+                            </p>
+                            <p class="mb-1 small">
+                                <span class="text-muted">Propietario:</span> ${data.propietario}
+                            </p>
+                            <p class="mb-0 small">
+                                <span class="text-muted">Ingresó:</span> ${data.horaIngreso}
+                                &mdash;
+                                <span class="text-muted">Tiempo adentro:</span> ${data.tiempoAdentro}
+                            </p>
+                        </div>
+                        <form action="/Visita/ConfirmarEgreso" method="post" class="ms-3">
+                            <input type="hidden" name="__RequestVerificationToken" value="${token}" />
+                            <input type="hidden" name="visitaId" value="${data.visitaId}" />
+                            <button type="submit" class="btn btn-danger">Confirmar egreso</button>
+                        </form>
+                    </div>
+                `;
+
+            } catch (e) {
+                console.error('Error detallado:', e);
+                mensajeDiv.innerHTML = '<span class="text-danger">Error al buscar. Intentá de nuevo.</span>';
+            } finally {
+                btnBuscar.disabled    = false;
+                btnBuscar.textContent = 'Buscar';
+            }
+        }
+
+        btnBuscar.addEventListener('click', buscarVisitaActiva);
+
+        inputDni.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarVisitaActiva();
+            }
+        });
+
+        inputDni.addEventListener('input', function () {
+            if (!this.value.trim()) {
+                resultadoDiv.innerHTML = '';
+                mensajeDiv.innerHTML   = '';
+            }
+        });
+    </script>
+}
