@@ -1,0 +1,220 @@
+﻿@using SistemaBarrio.ViewModels.Autorizaciones
+@model AutorizacionViewModel;
+
+@{
+    ViewData["Title"] = "Nueva autorización";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container mt-4" style="max-width: 600px">
+    <h4 class="mb-4">Nueva autorización</h4>
+
+    @* ── PASO 1: Buscar visitante por DNI ────────────────────────── *@
+    <div class="card mb-3">
+        <div class="card-body">
+            <label class="form-label fw-semibold">DNI del visitante</label>
+            <div class="input-group">
+                <input type="text" id="inputDni" class="form-control"
+                       placeholder="Ej: 35123456" inputmode="numeric"
+                       maxlength="8" autocomplete="off" />
+                <button type="button" id="btnBuscar"
+                        class="btn btn-outline-secondary">
+                    Buscar
+                </button>
+            </div>
+            <div id="mensajeBusqueda" class="mt-2 small"></div>
+        </div>
+    </div>
+
+    <form asp-action="Crear" method="post" id="formAutorizacion" class="d-none">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="VisitanteId" id="hiddenVisitanteId" />
+        <input type="hidden" asp-for="Dni" id="hiddenDni" />
+
+        @* ── PASO 2a: Visitante encontrado ───────────────────────── *@
+        <div id="seccionVisitanteEncontrado" class="card mb-3 border-success d-none">
+            <div class="card-header bg-success text-white">Visitante registrado</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Nombre:</strong> <span id="textoNombre"></span></p>
+                <p class="mb-0"><strong>DNI:</strong> <span id="textoDni"></span></p>
+            </div>
+        </div>
+
+        @* ── PASO 2b: Visitante nuevo ─────────────────────────────── *@
+        <div id="seccionVisitanteNuevo" class="card mb-3 border-warning d-none">
+            <div class="card-header bg-warning">Visitante nuevo — completar datos</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input asp-for="Nombre" class="form-control" placeholder="Ej: Juan" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Apellido</label>
+                    <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
+                    <span asp-validation-for="Apellido" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        @* ── PASO 3: Datos de la autorización ────────────────────── *@
+        <div class="card mb-3">
+            <div class="card-header">Datos de la autorización</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label asp-for="DomicilioId" class="form-label"></label>
+                    <select asp-for="DomicilioId" asp-items="Model.Domicilios"
+                            class="form-select" id="selectDomicilio">
+                        <option value="">-- Seleccionar domicilio --</option>
+                    </select>
+                    <span asp-validation-for="DomicilioId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PropietarioId" class="form-label"></label>
+                    <select asp-for="PropietarioId" class="form-select"
+                            id="selectPropietario" disabled>
+                        <option value="">-- Primero seleccioná un domicilio --</option>
+                    </select>
+                    <span asp-validation-for="PropietarioId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TipoAutorizacion" class="form-label"></label>
+                    <select asp-for="TipoAutorizacion" class="form-select">
+                        <option value="">-- Seleccionar tipo --</option>
+                        <option value="0">Temporal (válida solo por hoy)</option>
+                        <option value="1">Frecuente (sin vencimiento)</option>
+                    </select>
+                    <span asp-validation-for="TipoAutorizacion" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Guardar autorización</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const inputDni        = document.getElementById('inputDni');
+        const btnBuscar       = document.getElementById('btnBuscar');
+        const mensajeBusqueda = document.getElementById('mensajeBusqueda');
+        const formAutorizacion = document.getElementById('formAutorizacion');
+        const seccionEncontrado = document.getElementById('seccionVisitanteEncontrado');
+        const seccionNuevo      = document.getElementById('seccionVisitanteNuevo');
+        const selectDomicilio   = document.getElementById('selectDomicilio');
+        const selectPropietario = document.getElementById('selectPropietario');
+
+        // Buscar visitante por DNI
+        async function buscarVisitante() {
+            const dni = inputDni.value.trim();
+
+            if (!dni) {
+                mensajeBusqueda.innerHTML = '<span class="text-danger">Ingresá un DNI</span>';
+                return;
+            }
+
+            btnBuscar.disabled    = true;
+            btnBuscar.textContent = 'Buscando...';
+
+            try {
+                const response = await fetch(`/Autorizacion/BuscarPorDni?dni=${dni}`);
+                const data     = await response.json();
+
+                resetVisitante();
+                formAutorizacion.classList.remove('d-none');
+
+                if (data.encontrado) {
+                    document.getElementById('hiddenVisitanteId').value = data.id;
+                    document.getElementById('textoNombre').textContent =
+                        `${data.apellido}, ${data.nombre}`;
+                    document.getElementById('textoDni').textContent = data.dni;
+                    seccionEncontrado.classList.remove('d-none');
+                    mensajeBusqueda.innerHTML =
+                        '<span class="text-success">Visitante encontrado</span>';
+                } else {
+                    document.getElementById('hiddenDni').value = dni;
+                    seccionNuevo.classList.remove('d-none');
+                    mensajeBusqueda.innerHTML =
+                        '<span class="text-warning">DNI no registrado — completá los datos</span>';
+                }
+
+            } catch (e) {
+                console.error(e);
+                mensajeBusqueda.innerHTML =
+                    '<span class="text-danger">Error al buscar. Intentá de nuevo.</span>';
+            } finally {
+                btnBuscar.disabled    = false;
+                btnBuscar.textContent = 'Buscar';
+            }
+        }
+
+        // Cargar propietarios al seleccionar domicilio
+        selectDomicilio.addEventListener('change', async function () {
+            const domicilioId = this.value;
+
+            selectPropietario.innerHTML =
+                '<option value="">-- Cargando... --</option>';
+            selectPropietario.disabled = true;
+
+            if (!domicilioId) {
+                selectPropietario.innerHTML =
+                    '<option value="">-- Primero seleccioná un domicilio --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `/Autorizacion/PropietariosPorDomicilio?domicilioId=${domicilioId}`
+                );
+                const propietarios = await response.json();
+
+                selectPropietario.innerHTML =
+                    '<option value="">-- Seleccionar propietario --</option>';
+
+                propietarios.forEach(p => {
+                    const opt       = document.createElement('option');
+                    opt.value       = p.value;
+                    opt.textContent = p.text;
+                    selectPropietario.appendChild(opt);
+                });
+
+                selectPropietario.disabled = false;
+
+            } catch {
+                selectPropietario.innerHTML =
+                    '<option value="">-- Error al cargar --</option>';
+            }
+        });
+
+        function resetVisitante() {
+            document.getElementById('hiddenVisitanteId').value = '';
+            document.getElementById('hiddenDni').value         = '';
+            seccionEncontrado.classList.add('d-none');
+            seccionNuevo.classList.add('d-none');
+        }
+
+        btnBuscar.addEventListener('click', buscarVisitante);
+
+        inputDni.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarVisitante();
+            }
+        });
+
+        inputDni.addEventListener('input', function () {
+            if (!this.value.trim()) {
+                resetVisitante();
+                formAutorizacion.classList.add('d-none');
+                mensajeBusqueda.innerHTML = '';
+            }
+        });
+    </script>
+}

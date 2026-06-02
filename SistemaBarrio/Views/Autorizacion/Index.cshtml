@@ -1,0 +1,114 @@
+﻿@using SistemaBarrio.ViewModels.Autorizaciones
+@model IEnumerable<AutorizacionListaItemViewModel>
+
+@{
+    ViewData["Title"] = "Autorizaciones vigentes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Autorizaciones vigentes</h4>
+            <span class="text-muted small">@Model.Count() autorización(es) activa(s)</span>
+        </div>
+        <a asp-action="Crear" class="btn btn-primary">+ Nueva autorización</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <p class="mb-0">No hay autorizaciones vigentes en este momento</p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Visitante</th>
+                    <th>DNI</th>
+                    <th>Domicilio</th>
+                    <th>Propietario</th>
+                    <th>Tipo</th>
+                    <th>Alta</th>
+                    <th>Vencimiento</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.NombreVisitante</td>
+                        <td>@a.Dni</td>
+                        <td>@a.Domicilio</td>
+                        <td>@a.Propietario</td>
+                        <td>
+                            @if (a.Tipo == "Temporal")
+                            {
+                                <span class="badge bg-warning text-dark">Temporal</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Frecuente</span>
+                            }
+                        </td>
+                        <td>@a.FechaAlta</td>
+                        <td>@a.FechaVencimiento</td>
+                        <td class="text-end">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalFinalizar"
+                                    data-id="@a.Id"
+                                    data-nombre="@a.NombreVisitante">
+                                Finalizar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@* Modal confirmar finalizar *@
+<div class="modal fade" id="modalFinalizar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Finalizar autorización</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                ¿Finalizar la autorización de <strong id="modalNombre"></strong>?
+                Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <form id="formFinalizar" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Finalizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('modalFinalizar')
+            .addEventListener('show.bs.modal', function (e) {
+                const btn    = e.relatedTarget;
+                const id     = btn.getAttribute('data-id');
+                const nombre = btn.getAttribute('data-nombre');
+
+                document.getElementById('modalNombre').textContent = nombre;
+                document.getElementById('formFinalizar').action =
+                    '/Autorizacion/Finalizar/' + id;
+            });
+    </script>
+}

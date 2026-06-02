@@ -127,6 +127,12 @@ namespace SistemaBarrio.Data
                 .WithMany(p => p.Autorizaciones)
                 .HasForeignKey(a => a.PropietarioId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Autorizacion>()
+            .HasOne(a => a.Domicilio)
+            .WithMany()
+            .HasForeignKey(a => a.DomicilioId)
+            .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

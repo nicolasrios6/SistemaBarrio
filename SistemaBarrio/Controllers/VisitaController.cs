@@ -53,13 +53,32 @@ namespace SistemaBarrio.Controllers
             if (visitante == null)
                 return Json(new VisitanteEncontradoDto { Encontrado = false });
 
+            // Buscar autorización vigente
+            var autorizacion = await _context.Autorizaciones
+                .Include(a => a.Domicilio)
+                .Include(a => a.Propietario)
+                .Where(a => a.VisitanteId == visitante.Id &&
+                            a.EstadoAutorizacion == EstadoAutorizacion.Vigente &&
+                            (a.FechaVencimiento == null || a.FechaVencimiento > DateTime.Now))
+                .FirstOrDefaultAsync();
+
             return Json(new VisitanteEncontradoDto
             {
                 Encontrado = true,
                 Id = visitante.Id,
                 Nombre = visitante.Nombre,
                 Apellido = visitante.Apellido,
-                Dni = visitante.Dni
+                Dni = visitante.Dni,
+                TieneAutorizacion = autorizacion != null,
+                AutorizacionDomicilio = autorizacion != null
+                    ? $"Manzana {autorizacion.Domicilio.Manzana ?? "-"} - Casa {autorizacion.Domicilio.Casa}"
+                    : null,
+                AutorizacionPropietario = autorizacion != null
+                    ? $"{autorizacion.Propietario.Apellido}, {autorizacion.Propietario.Nombre}"
+                    : null,
+                AutorizacionDomicilioId = autorizacion?.DomicilioId,
+                AutorizacionPropietarioId = autorizacion?.PropietarioId,
+                AutorizacionTipo = autorizacion?.TipoAutorizacion.ToString()
             });
         }
 
