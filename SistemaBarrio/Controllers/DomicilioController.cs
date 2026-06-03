@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaBarrio.Data;
 using SistemaBarrio.Models;
@@ -6,6 +7,7 @@ using SistemaBarrio.ViewModels.Domicilios;
 
 namespace SistemaBarrio.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DomicilioController : Controller
     {
         private readonly BarrioDbContext _context;

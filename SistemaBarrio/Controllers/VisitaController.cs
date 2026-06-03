@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SistemaBarrio.Data;
@@ -7,6 +8,7 @@ using SistemaBarrio.ViewModels.Visitas;
 
 namespace SistemaBarrio.Controllers
 {
+    [Authorize(Roles = "Admin, Guardia")]
     public class VisitaController : Controller
     {
         private BarrioDbContext _context;

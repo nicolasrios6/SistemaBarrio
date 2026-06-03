@@ -1,0 +1,89 @@
+﻿@using SistemaBarrio.ViewModels.Visitantes
+@model VisitantePerfilViewModel
+
+@{
+    ViewData["Title"] = $"Perfil — {Model.NombreCompleto}";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            ← Volver a la lista
+        </a>
+    </div>
+
+    @* ── Datos del visitante ──────────────────────────────────────── *@
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">@Model.NombreCompleto</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-3">
+                    <p class="text-muted small mb-1">DNI</p>
+                    <p class="fw-semibold">@Model.Dni</p>
+                </div>
+                <div class="col-sm-3">
+                    <p class="text-muted small mb-1">Visitas realizadas</p>
+                    <p class="fw-semibold">@Model.CantidadVisitas</p>
+                </div>
+                <div class="col-sm-3">
+                    <p class="text-muted small mb-1">Primera visita</p>
+                    <p class="fw-semibold">@(Model.PrimeraVisita ?? "-")</p>
+                </div>
+                <div class="col-sm-3">
+                    <p class="text-muted small mb-1">Última visita</p>
+                    <p class="fw-semibold">@(Model.UltimaVisita ?? "-")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Historial de visitas ─────────────────────────────────────── *@
+    <h5 class="mb-3">Historial de visitas</h5>
+
+    @if (!Model.Visitas.Any())
+    {
+        <div class="text-center text-muted py-4">
+            <p class="mb-0">Este visitante no tiene visitas registradas</p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Ingreso</th>
+                    <th>Egreso</th>
+                    <th>Duración</th>
+                    <th>Domicilio</th>
+                    <th>Propietario</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in Model.Visitas)
+                {
+                    <tr>
+                        <td>@v.FechaIngreso</td>
+                        <td>@(v.FechaEgreso ?? "-")</td>
+                        <td>@v.Duracion</td>
+                        <td>@v.Domicilio</td>
+                        <td>@v.Propietario</td>
+                        <td>
+                            @if (v.Estado == "En curso")
+                            {
+                                <span class="badge bg-success">En curso</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Finalizada</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

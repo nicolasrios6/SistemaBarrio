@@ -41,6 +41,23 @@ namespace SistemaBarrio.Data.Seed
                     await userManager.AddToRoleAsync(user, "Admin");
                 }
             }
+
+            string guardiaEmail = "guardia@barriocarolinos.com";
+            string guardiaPassword = "Guardia123!";
+
+            var guardia = await userManager.FindByEmailAsync(guardiaEmail);
+            if (guardia == null)
+            {
+                var user = new Usuario
+                {
+                    UserName = guardiaEmail,
+                    Email = guardiaEmail,
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(user, guardiaPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(user, "Guardia");
+            }
         }
     }
 }

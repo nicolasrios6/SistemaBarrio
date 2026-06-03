@@ -1,0 +1,75 @@
+﻿@using SistemaBarrio.ViewModels.Visitantes
+@model IEnumerable<VisitanteListaItemViewModel>
+
+@{
+    ViewData["Title"] = "Visitantes";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0">Visitantes</h4>
+            <span class="text-muted small">@Model.Count() visitante(s) registrado(s)</span>
+        </div>
+    </div>
+
+    @* ── Buscador ─────────────────────────────────────────────────── *@
+    <form method="get" asp-action="Index" class="mb-4">
+        <div class="input-group" style="max-width: 420px">
+            <input type="text" name="buscar" value="@ViewBag.Buscar"
+                   class="form-control" placeholder="Buscar por nombre, apellido o DNI" />
+            <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.Buscar as string))
+            {
+                <a asp-action="Index" class="btn btn-outline-danger">✕</a>
+            }
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            @if (!string.IsNullOrWhiteSpace(ViewBag.Buscar as string))
+            {
+                <p class="mb-0">No se encontraron visitantes para "<strong>@ViewBag.Buscar</strong>"</p>
+            }
+            else
+            {
+                <p class="mb-0">No hay visitantes registrados todavía</p>
+            }
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Apellido y nombre</th>
+                    <th>DNI</th>
+                    <th>Visitas realizadas</th>
+                    <th>Última visita</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var v in Model)
+                {
+                    <tr>
+                        <td>@v.NombreCompleto</td>
+                        <td>@v.Dni</td>
+                        <td>
+                            <span class="badge bg-secondary">@v.CantidadVisitas</span>
+                        </td>
+                        <td>@(v.UltimaVisita ?? "-")</td>
+                        <td class="text-end">
+                            <a asp-action="Perfil" asp-route-id="@v.Id"
+                               class="btn btn-sm btn-outline-primary">
+                                Ver perfil
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
