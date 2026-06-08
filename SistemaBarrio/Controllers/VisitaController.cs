@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using SistemaBarrio.Data;
 using SistemaBarrio.Models;
 using SistemaBarrio.ViewModels.Visitas;
+using static SistemaBarrio.ViewModels.Visitas.VisitanteEncontradoDto;
 
 namespace SistemaBarrio.Controllers
 {
@@ -55,32 +56,33 @@ namespace SistemaBarrio.Controllers
             if (visitante == null)
                 return Json(new VisitanteEncontradoDto { Encontrado = false });
 
-            // Buscar autorización vigente
-            var autorizacion = await _context.Autorizaciones
+            // Buscar todas las autorizaciones vigentes
+            var autorizaciones = await _context.Autorizaciones
                 .Include(a => a.Domicilio)
                 .Include(a => a.Propietario)
                 .Where(a => a.VisitanteId == visitante.Id &&
                             a.EstadoAutorizacion == EstadoAutorizacion.Vigente &&
                             (a.FechaVencimiento == null || a.FechaVencimiento > DateTime.Now))
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
             return Json(new VisitanteEncontradoDto
             {
                 Encontrado = true,
+                Vetado = false,
                 Id = visitante.Id,
                 Nombre = visitante.Nombre,
                 Apellido = visitante.Apellido,
                 Dni = visitante.Dni,
-                TieneAutorizacion = autorizacion != null,
-                AutorizacionDomicilio = autorizacion != null
-                    ? $"Manzana {autorizacion.Domicilio.Manzana ?? "-"} - Casa {autorizacion.Domicilio.Casa}"
-                    : null,
-                AutorizacionPropietario = autorizacion != null
-                    ? $"{autorizacion.Propietario.Apellido}, {autorizacion.Propietario.Nombre}"
-                    : null,
-                AutorizacionDomicilioId = autorizacion?.DomicilioId,
-                AutorizacionPropietarioId = autorizacion?.PropietarioId,
-                AutorizacionTipo = autorizacion?.TipoAutorizacion.ToString()
+                TieneAutorizacion = autorizaciones.Any(),
+                Autorizaciones = autorizaciones.Select(a => new AutorizacionDto
+                {
+                    DomicilioId = a.DomicilioId,
+                    PropietarioId = a.PropietarioId,
+                    Domicilio = $"Manzana {a.Domicilio.Manzana ?? "-"} - Casa {a.Domicilio.Casa}",
+                    Propietario = $"{a.Propietario.Apellido}, {a.Propietario.Nombre}",
+                    Tipo = a.TipoAutorizacion == TipoAutorizacion.Temporal
+                                    ? "Temporal" : "Frecuente"
+                }).ToList()
             });
         }
 
@@ -92,7 +94,7 @@ namespace SistemaBarrio.Controllers
             var propietarios = await _context.Propietarios
                 .Where(p => p.DomicilioId == domicilioId && p.Activo)
                 .OrderBy(p => p.Apellido)
-                .Select(p => new { value = p.Id, text = $"{p.Apellido}, {p.Nombre}" })
+                .Select(p => new { value = p.Id, text = $"{p.Apellido}, {p.Nombre} - {p.Telefono}" })
                 .ToListAsync();
 
             return Json(propietarios);
@@ -262,6 +264,75 @@ namespace SistemaBarrio.Controllers
 
             TempData["Exito"] = $"Egreso de {visita.Visitante.Apellido}, {visita.Visitante.Nombre} registrado correctamente";
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Visita/Historial
+        public async Task<IActionResult> Historial(DateTime? fecha, int pagina = 1)
+        {
+            int porPagina = 15;
+
+            var query = _context.Visitas
+                .Include(v => v.Visitante)
+                .Include(v => v.Propietario)
+                .Include(v => v.Domicilio)
+                .AsQueryable();
+
+            // Filtro por día específico
+            if (fecha.HasValue)
+            {
+                var diaInicio = fecha.Value.Date;
+                var diaFin = diaInicio.AddDays(1);
+                query = query.Where(v => v.FechaHoraIngreso >= diaInicio &&
+                                         v.FechaHoraIngreso < diaFin);
+            }
+
+            var total = await query.CountAsync();
+            var totalPaginas = (int)Math.Ceiling(total / (double)porPagina);
+
+            var visitas = await query
+                .OrderByDescending(v => v.FechaHoraIngreso)
+                .Skip((pagina - 1) * porPagina)
+                .Take(porPagina)
+                .ToListAsync();
+
+            var vm = new HistorialViewModel
+            {
+                FechaFiltro = fecha,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas,
+                Visitas = visitas.Select(v =>
+                {
+                    string duracion;
+                    if (v.FechaHoraSalida.HasValue)
+                    {
+                        var minutos = (int)(v.FechaHoraSalida.Value - v.FechaHoraIngreso).TotalMinutes;
+                        duracion = minutos < 60
+                            ? $"{minutos} min"
+                            : $"{minutos / 60}h {minutos % 60}min";
+                    }
+                    else
+                    {
+                        duracion = "-";
+                    }
+
+                    return new HistorialVisitaItemViewModel
+                    {
+                        NombreVisitante = $"{v.Visitante.Apellido}, {v.Visitante.Nombre}",
+                        Dni = v.Visitante.Dni,
+                        Domicilio = $"Manzana {v.Domicilio.Manzana ?? "-"} - Casa {v.Domicilio.Casa}",
+                        Propietario = $"{v.Propietario.Apellido}, {v.Propietario.Nombre}",
+                        HoraIngreso = v.FechaHoraIngreso.ToString("HH:mm"),
+                        HoraEgreso = v.FechaHoraSalida.HasValue
+                            ? v.FechaHoraSalida.Value.ToString("HH:mm") : null,
+                        Duracion = duracion,
+                        Estado = v.EstadoVisita == EstadoVisita.EnCurso
+                            ? "En curso" : "Finalizada",
+                        FechaHoraIngreso = v.FechaHoraIngreso
+                    };
+                }).ToList()
+            };
+
+            return View(vm);
         }
     }
 }

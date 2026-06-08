@@ -1,0 +1,154 @@
+﻿@model SistemaBarrio.ViewModels.Visitas.HistorialViewModel;
+
+@{
+    ViewData["Title"] = "Historial de visitas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Historial de visitas</h4>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            ← Volver al panel
+        </a>
+    </div>
+
+    @* ── Filtro por día ───────────────────────────────────────────── *@
+    <form method="get" asp-action="Historial" class="mb-4">
+        <div class="input-group" style="max-width: 340px">
+            <input type="date" name="fecha" class="form-control"
+                   value="@(Model.FechaFiltro.HasValue? Model.FechaFiltro.Value.ToString("yyyy-MM-dd") : "")" />
+            <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
+            @if (Model.FechaFiltro.HasValue)
+            {
+                <a asp-action="Historial" class="btn btn-outline-danger">✕</a>
+            }
+        </div>
+        @if (Model.FechaFiltro.HasValue)
+        {
+            <p class="text-muted small mt-2">
+                Mostrando visitas del @Model.FechaFiltro.Value.ToString("dd/MM/yyyy")
+            </p>
+        }
+    </form>
+
+    @if (!Model.Visitas.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <p class="mb-0">
+                @if (Model.FechaFiltro.HasValue)
+                {
+                    <span>No hay visitas registradas para el @Model.FechaFiltro.Value.ToString("dd/MM/yyyy")</span>
+                }
+                else
+                {
+                    <span>No hay visitas registradas</span>
+                }
+            </p>
+        </div>
+    }
+    else
+    {
+        @* Agrupar por día *@
+        var grupos = Model.Visitas
+        .GroupBy(v => v.FechaHoraIngreso.Date)
+        .OrderByDescending(g => g.Key);
+
+        foreach (var grupo in grupos)
+        {
+            var esHoy = grupo.Key == DateTime.Today;
+            var esAyer = grupo.Key == DateTime.Today.AddDays(-1);
+            var etiqueta = esHoy ? $"Hoy, {grupo.Key:dd/MM/yyyy}"
+            : esAyer ? $"Ayer, {grupo.Key:dd/MM/yyyy}"
+            : grupo.Key.ToString("dddd dd/MM/yyyy");
+
+            @* Encabezado del día *@
+            <div class="d-flex align-items-center gap-2 mb-2 mt-3">
+                <span class="text-muted small fw-semibold text-uppercase">@etiqueta</span>
+                <hr class="flex-grow-1 my-0" />
+                <span class="badge bg-secondary">@grupo.Count() visita(s)</span>
+            </div>
+
+            <table class="table table-bordered table-hover align-middle mb-4">
+                <thead class="table-light">
+                    <tr>
+                        <th>Visitante</th>
+                        <th>DNI</th>
+                        <th>Domicilio</th>
+                        <th>Propietario</th>
+                        <th>Ingreso</th>
+                        <th>Egreso</th>
+                        <th>Duración</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var v in grupo)
+                    {
+                        <tr>
+                            <td>@v.NombreVisitante</td>
+                            <td>@v.Dni</td>
+                            <td>@v.Domicilio</td>
+                            <td>@v.Propietario</td>
+                            <td>@v.HoraIngreso</td>
+                            <td>@(v.HoraEgreso ?? "-")</td>
+                            <td>@v.Duracion</td>
+                            <td>
+                                @if (v.Estado == "En curso")
+                                {
+                                    <span class="badge bg-success">En curso</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Finalizada</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @* ── Paginado ─────────────────────────────────────────────── *@
+        @if (Model.TotalPaginas > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(!Model.TienePaginaAnterior ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="Historial"
+                           asp-route-pagina="@(Model.PaginaActual - 1)"
+                           asp-route-fecha="@(Model.FechaFiltro.HasValue? Model.FechaFiltro.Value.ToString("yyyy-MM-dd") : "")">
+                            ← Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Historial"
+                               asp-route-pagina="@i"
+                               asp-route-fecha="@(Model.FechaFiltro.HasValue ? Model.FechaFiltro.Value.ToString("yyyy-MM-dd") : "")">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(!Model.TienePaginaSiguiente ? "disabled" : "")">
+                        <a class="page-link"
+                           asp-action="Historial"
+                           asp-route-pagina="@(Model.PaginaActual + 1)"
+                           asp-route-fecha="@(Model.FechaFiltro.HasValue? Model.FechaFiltro.Value.ToString("yyyy-MM-dd") : "")">
+                            Siguiente →
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <p class="text-center text-muted small">
+                Página @Model.PaginaActual de @Model.TotalPaginas
+                — @Model.Visitas.Count visita(s) en esta página
+            </p>
+        }
+    }
+</div>

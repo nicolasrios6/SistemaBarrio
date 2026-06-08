@@ -53,6 +53,15 @@
                         <span id="textoAutorizacionPropietario"></span>
                     </p>
                 </div>
+
+                <div id="seccionSelectorAutorizacion" class="mt-3 d-none">
+                    <label class="form-label fw-semibold small text-warning">
+                        ⚠ Múltiples autorizaciones — seleccioná el domicilio
+                    </label>
+                    <select id="selectAutorizacion" class="form-select">
+                        <option value="">-- Seleccioná el domicilio que viene a visitar --</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -79,7 +88,7 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label asp-for="DomicilioId" class="form-label"></label>
-                    <select  asp-items="Model.Domicilios"
+                    <select asp-items="Model.Domicilios"
                             class="form-select" id="selectDomicilio">
                         <option value="">-- Seleccionar domicilio --</option>
                     </select>
@@ -88,7 +97,7 @@
 
                 <div class="mb-3">
                     <label asp-for="PropietarioId" class="form-label"></label>
-                    <select  class="form-select"
+                    <select class="form-select"
                             id="selectPropietario" disabled>
                         <option value="">-- Primero seleccioná un domicilio --</option>
                     </select>
@@ -150,7 +159,7 @@
                     return;
                 }
 
-                
+
 
                 // Visitante encontrado
                 hiddenVisitanteId.value = data.id;
@@ -160,30 +169,63 @@
 
                 // ── Si tiene autorización vigente ──────────────────────
                 if (data.tieneAutorizacion) {
-                    // Mostrar badge de autorizado
-                    document.getElementById('badgeAutorizacion').classList.remove('d-none');
-                    document.getElementById('textoAutorizacionTipo').textContent =
-                        data.autorizacionTipo === 'Temporal' ? 'Temporal' : 'Frecuente';
-                    document.getElementById('textoAutorizacionDomicilio').textContent =
-                        data.autorizacionDomicilio;
-                    document.getElementById('textoAutorizacionPropietario').textContent =
-                        data.autorizacionPropietario;
-                            document.getElementById('hiddenDomicilioId').value  = data.autorizacionDomicilioId;  // ✅
-        document.getElementById('hiddenPropietarioId').value = data.autorizacionPropietarioId; // ✅
-                    // Precargar el domicilio en el select
-                    selectDomicilio.value = data.autorizacionDomicilioId;
-                    selectDomicilio.disabled = true;
+                document.getElementById('badgeAutorizacion').classList.remove('d-none');
+                document.getElementById('badgeAutorizacionTipo').classList.remove('d-none');
 
-                    // Cargar y preseleccionar el propietario
-                    await cargarPropietarios(data.autorizacionDomicilioId, data.autorizacionPropietarioId);
+                if (data.autorizaciones.length === 1) {
+                    // Una sola autorización — precarga automático como antes
+                    const auth = data.autorizaciones[0];
+
+                    document.getElementById('textoAutorizacionTipo').textContent = auth.tipo;
+                    document.getElementById('textoAutorizacionDomicilio').textContent = auth.domicilio;
+                    document.getElementById('textoAutorizacionPropietario').textContent = auth.propietario;
+
+                    document.getElementById('hiddenDomicilioId').value  = auth.domicilioId;
+                    document.getElementById('hiddenPropietarioId').value = auth.propietarioId;
+
+                    selectDomicilio.value    = auth.domicilioId;
+                    selectDomicilio.disabled = true;
+                    await cargarPropietarios(auth.domicilioId, auth.propietarioId);
                     selectPropietario.disabled = true;
+
+                    // Ocultar selector de autorizaciones si estaba visible
+                    document.getElementById('seccionSelectorAutorizacion').classList.add('d-none');
 
                     mensajeBusqueda.innerHTML =
                         '<span class="text-success fw-semibold">✓ Visitante autorizado — podés confirmar el ingreso directamente</span>';
+
                 } else {
+                    // Múltiples autorizaciones — mostrar selector
+                    const seccionSelector = document.getElementById('seccionSelectorAutorizacion');
+                    const selectAuth      = document.getElementById('selectAutorizacion');
+
+                    selectAuth.innerHTML = '<option value="">-- Seleccioná el domicilio que viene a visitar --</option>';
+
+                    data.autorizaciones.forEach((auth, index) => {
+                        const opt       = document.createElement('option');
+                        opt.value       = index;
+                        opt.textContent = `${auth.domicilio} — ${auth.propietario} (${auth.tipo})`;
+                        opt.dataset.domicilioId   = auth.domicilioId;
+                        opt.dataset.propietarioId = auth.propietarioId;
+                        opt.dataset.domicilio     = auth.domicilio;
+                        opt.dataset.propietario   = auth.propietario;
+                        opt.dataset.tipo          = auth.tipo;
+                        selectAuth.appendChild(opt);
+                    });
+
+                    seccionSelector.classList.remove('d-none');
+
+                    // Deshabilitar selects hasta que elija
+                    selectDomicilio.disabled    = true;
+                    selectPropietario.disabled  = true;
+
                     mensajeBusqueda.innerHTML =
-                        '<span class="text-success">Visitante encontrado</span>';
+                        '<span class="text-warning fw-semibold">⚠ El visitante tiene múltiples autorizaciones — seleccioná el domicilio que viene a visitar</span>';
                 }
+            } else {
+                mensajeBusqueda.innerHTML =
+                    '<span class="text-success">Visitante encontrado</span>';
+            }
 
                 seccionEncontrado.classList.remove('d-none');
                 formRegistrar.classList.remove('d-none');
@@ -247,6 +289,27 @@
             document.getElementById('hiddenPropietarioId').value = this.value; // ✅
         });
 
+            document.getElementById('selectAutorizacion')
+        .addEventListener('change', async function () {
+            const opt = this.options[this.selectedIndex];
+            if (!opt.value) return;
+
+            const domicilioId   = opt.dataset.domicilioId;
+            const propietarioId = opt.dataset.propietarioId;
+
+            document.getElementById('textoAutorizacionDomicilio').textContent  = opt.dataset.domicilio;
+            document.getElementById('textoAutorizacionPropietario').textContent = opt.dataset.propietario;
+            document.getElementById('textoAutorizacionTipo').textContent       = opt.dataset.tipo;
+
+            document.getElementById('hiddenDomicilioId').value  = domicilioId;
+            document.getElementById('hiddenPropietarioId').value = propietarioId;
+
+            selectDomicilio.value    = domicilioId;
+            selectDomicilio.disabled = true;
+            await cargarPropietarios(domicilioId, propietarioId);
+            selectPropietario.disabled = true;
+        });
+
         btnBuscar.addEventListener('click', buscarVisitante);
 
         inputDni.addEventListener('keydown', function (e) {
@@ -280,6 +343,9 @@
             document.getElementById('badgeAutorizacionTipo').classList.add('d-none'); // ✅ agregado
                 document.getElementById('hiddenDomicilioId').value  = '';  // ✅
         document.getElementById('hiddenPropietarioId').value = ''; // ✅
+            document.getElementById('seccionSelectorAutorizacion').classList.add('d-none');
+        document.getElementById('selectAutorizacion').innerHTML =
+            '<option value="">-- Seleccioná el domicilio que viene a visitar --</option>';
         }
     </script>
 }

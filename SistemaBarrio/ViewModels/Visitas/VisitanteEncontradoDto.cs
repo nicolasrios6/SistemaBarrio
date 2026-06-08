@@ -3,17 +3,22 @@
     public class VisitanteEncontradoDto
     {
         public bool Encontrado { get; set; }
+        public bool Vetado { get; set; }
         public int? Id { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
         public string? Dni { get; set; }
 
-        // ✅ nuevo — datos de autorización si existe
         public bool TieneAutorizacion { get; set; }
-        public string? AutorizacionDomicilio { get; set; }
-        public string? AutorizacionPropietario { get; set; }
-        public int? AutorizacionDomicilioId { get; set; }
-        public int? AutorizacionPropietarioId { get; set; }
-        public string? AutorizacionTipo { get; set; }
+        public List<AutorizacionDto> Autorizaciones { get; set; } = new();
+
+        public class AutorizacionDto
+        {
+            public int DomicilioId { get; set; }
+            public int PropietarioId { get; set; }
+            public string Domicilio { get; set; } = string.Empty;
+            public string Propietario { get; set; } = string.Empty;
+            public string Tipo { get; set; } = string.Empty;
+        }
     }
 }

@@ -34,6 +34,8 @@ namespace SistemaBarrio.Controllers
         // GET: /Autorizacion
         public async Task<IActionResult> Index()
         {
+            await ActualizarAutorizacionesVencidas(); // ✅
+
             var autorizaciones = await AutorizacionesVigentes()
                 .Include(a => a.Visitante)
                 .Include(a => a.Propietario)
@@ -191,6 +193,8 @@ namespace SistemaBarrio.Controllers
         [HttpGet]
         public async Task<IActionResult> BuscarPorDni(string dni)
         {
+            await ActualizarAutorizacionesVencidas();
+
             if (string.IsNullOrWhiteSpace(dni))
                 return Json(new VisitanteEncontradoDto { Encontrado = false });
 
@@ -228,6 +232,21 @@ namespace SistemaBarrio.Controllers
             return _context.Autorizaciones
                 .Where(a => a.EstadoAutorizacion == EstadoAutorizacion.Vigente &&
                             (a.FechaVencimiento == null || a.FechaVencimiento > DateTime.Now));
+        }
+
+        private async Task ActualizarAutorizacionesVencidas()
+        {
+            var vencidas = await _context.Autorizaciones
+                .Where(a => a.EstadoAutorizacion == EstadoAutorizacion.Vigente &&
+                            a.FechaVencimiento != null &&
+                            a.FechaVencimiento < DateTime.Now)
+                .ToListAsync();
+
+            foreach (var a in vencidas)
+                a.EstadoAutorizacion = EstadoAutorizacion.Finalizada;
+
+            if (vencidas.Any())
+                await _context.SaveChangesAsync();
         }
     }
 }
