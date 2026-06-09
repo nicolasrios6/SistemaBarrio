@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Error inesperado";
+}
+
+<div class="container mt-5" style="max-width: 540px">
+    <div class="text-center">
+        <h1 class="display-1 text-danger">500</h1>
+        <h4 class="mb-3">Ocurrió un error inesperado</h4>
+        <p class="text-muted mb-4">
+            Algo salió mal en el servidor. El error fue registrado
+            y será revisado. Podés intentar de nuevo o volver al inicio.
+        </p>
+        <a asp-controller="Visita" asp-action="Index" class="btn btn-primary">
+            Volver al panel
+        </a>
+    </div>
+</div>

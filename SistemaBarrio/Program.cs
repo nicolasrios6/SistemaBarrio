@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SistemaBarrio.Data;
 using SistemaBarrio.Data.Seed;
 using SistemaBarrio.Models;
@@ -25,17 +27,41 @@ builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
     .AddEntityFrameworkStores<BarrioDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Error/403";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+});
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Warning()
+    .WriteTo.File(
+        path: "logs/sistemabarrio-.log",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:dd/MM/yyyy HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}"
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
+}
+else
+{
+    app.UseExceptionHandler("/Error/Index");
+
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
@@ -45,8 +71,12 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}")
-    .WithStaticAssets();
+    pattern: "{controller=Account}/{action=Login}/{id?}");
+
+app.MapControllerRoute(
+    name: "catchAll",
+     pattern: "{*url}",
+     defaults: new { controller = "Error", action = "HttpError", statusCode = 404 });
 
 using (var scope = app.Services.CreateScope())
 {
