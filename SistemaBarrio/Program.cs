@@ -4,13 +4,22 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SistemaBarrio.Data;
 using SistemaBarrio.Data.Seed;
+using SistemaBarrio.Filters;
 using SistemaBarrio.Models;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+//builder.Services.AddControllersWithViews();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<IpGuardiaFilter>();
+});
+
+// Registrar el filtro como servicio
+builder.Services.AddScoped<IpGuardiaFilter>();
 
 // Program.cs
 builder.Services.AddDbContext<BarrioDbContext>(options =>

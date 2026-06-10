@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SistemaBarrio.Filters;
 using SistemaBarrio.Models;
 
 namespace SistemaBarrio.Controllers
 {
+    [SkipIpFilter]
     public class AccountController : Controller
     {
         private readonly UserManager<Usuario> _userManager;

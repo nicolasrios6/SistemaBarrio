@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Acceso no autorizado";
+}
+
+<div class="container mt-5" style="max-width: 540px">
+    <div class="text-center">
+        <h1 class="display-1 text-danger">⚠</h1>
+        <h4 class="mb-3">Acceso no autorizado</h4>
+        <p class="text-muted mb-4">
+            El sistema solo puede ser accedido desde la red de la portería.
+            Si estás en la portería y ves este mensaje, contactá al administrador.
+        </p>
+        <a asp-controller="Account" asp-action="Logout" method="post"
+           class="btn btn-danger">
+            Cerrar sesión
+        </a>
+    </div>
+</div>

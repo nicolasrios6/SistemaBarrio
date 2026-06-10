@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SistemaBarrio.Filters;
 
 namespace SistemaBarrio.Controllers
 {
+    [SkipIpFilter]
     public class ErrorController : Controller
     {
         private readonly ILogger<ErrorController> _logger;
@@ -42,6 +45,12 @@ namespace SistemaBarrio.Controllers
                 403 => View("Forbidden"),
                 _ => View("Index")
             };
+        }
+
+        [AllowAnonymous]
+        public IActionResult IpNoAutorizada()
+        {
+            return View();
         }
     }
 }
