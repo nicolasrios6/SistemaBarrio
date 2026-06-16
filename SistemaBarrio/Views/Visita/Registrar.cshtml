@@ -13,7 +13,8 @@
             <label class="form-label fw-semibold">DNI del visitante</label>
             <div class="input-group">
                 <input type="text" id="inputDni" class="form-control"
-                       placeholder="Ej: 35123456" inputmode="numeric" maxlength="8" />
+                       placeholder="Ej: 35123456" inputmode="numeric" maxlength="8" pattern="\d*"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 <button type="button" id="btnBuscar" class="btn btn-primary">Buscar</button>
             </div>
             <div id="mensajeBusqueda" class="mt-2 small"></div>

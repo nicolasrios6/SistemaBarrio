@@ -75,6 +75,23 @@
 
 @section Scripts {
     <script>
+
+        let reloadTimer = setTimeout(function () {
+            location.reload();
+        }, 60000);
+
+        // Pausar el timer si el guardia está escribiendo
+        document.getElementById('inputDniEgreso').addEventListener('focus', function () {
+            clearTimeout(reloadTimer);
+        });
+
+        // Reanudar cuando sale del input
+        document.getElementById('inputDniEgreso').addEventListener('blur', function () {
+            reloadTimer = setTimeout(function () {
+                location.reload();
+            }, 60000);
+        });
+
         const inputDni     = document.getElementById('inputDniEgreso');
         const btnBuscar    = document.getElementById('btnBuscarEgreso');
         const resultadoDiv = document.getElementById('resultadoEgreso');

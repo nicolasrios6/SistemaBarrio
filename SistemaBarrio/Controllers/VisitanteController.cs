@@ -17,8 +17,10 @@ namespace SistemaBarrio.Controllers
             _context = context;
         }
         // GET: /Visitante
-        public async Task<IActionResult> Index(string? buscar)
+        public async Task<IActionResult> Index(string? buscar, int pagina = 1)
         {
+            int porPagina = 10;
+
             var query = _context.Visitantes
                 .Include(v => v.Visitas)
                 .AsQueryable();
@@ -31,9 +33,14 @@ namespace SistemaBarrio.Controllers
                                           v.Dni.Contains(buscar));
             }
 
+            var total = await query.CountAsync();
+            var totalPaginas = (int)Math.Ceiling(total / (double)porPagina);
+
             var visitantes = await query
                 .OrderBy(v => v.Apellido)
                 .ThenBy(v => v.Nombre)
+                .Skip((pagina - 1) * porPagina)
+                .Take(porPagina)
                 .ToListAsync();
 
             var vm = visitantes.Select(v => new VisitanteListaItemViewModel
@@ -49,6 +56,9 @@ namespace SistemaBarrio.Controllers
             }).ToList();
 
             ViewBag.Buscar = buscar;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TotalPaginas = totalPaginas;
+
             return View(vm);
         }
 
