@@ -39,6 +39,7 @@
             <div class="card-body">
                 <p class="mb-1"><strong>Nombre:</strong> <span id="textoNombre"></span></p>
                 <p class="mb-0"><strong>DNI:</strong> <span id="textoDni"></span></p>
+                <p class="mb-0"><strong>Patente:</strong> <span id="textoPatente"></span></p>
             </div>
         </div>
 
@@ -56,6 +57,12 @@
                     <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
                     <span asp-validation-for="Apellido" class="text-danger small"></span>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Patente</label>
+                    <input type="text" id="inputPatente" name="Patente" class="form-control form-control-sm"
+                           placeholder="Ej: AH123AA (opcional)" maxlength="10"
+                           style="text-transform: uppercase" />
+                </div>
             </div>
         </div>
 
@@ -66,7 +73,7 @@
                 <div class="mb-3">
                     <label asp-for="DomicilioId" class="form-label"></label>
                     <select asp-for="DomicilioId" asp-items="Model.Domicilios"
-                            class="form-select" id="selectDomicilio">
+                            class="tom-select" id="selectDomicilio">
                         <option value="">-- Seleccionar domicilio --</option>
                     </select>
                     <span asp-validation-for="DomicilioId" class="text-danger small"></span>

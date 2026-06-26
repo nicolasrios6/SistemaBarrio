@@ -25,3 +25,52 @@ document.addEventListener("click", function (e) {
     }
 
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelectorAll(".tom-select").forEach(select => {
+
+        new TomSelect(select, {
+
+            create: false,
+
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+
+            score(search) {
+
+                const busqueda = search
+                    .toUpperCase()
+                    .replace(/\s+/g, "");
+
+                return function (item) {
+
+                    // Texto original
+                    const texto = item.text.toUpperCase();
+
+                    // Ej: "MANZANA A - CASA 3"
+                    const normalizado = texto
+                        .replace("MANZANA", "")
+                        .replace("CASA", "")
+                        .replace(/[\s-]/g, "");
+
+                    // Resultado: "A3"
+
+                    if (normalizado.includes(busqueda))
+                        return 100;
+
+                    // Si no coincide con A3, usa la búsqueda normal
+                    if (texto.includes(busqueda))
+                        return 50;
+
+                    return 0;
+                };
+            }
+
+        });
+
+    });
+
+});

@@ -103,8 +103,8 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label asp-for="DomicilioId" class="form-label"></label>
-                    <select asp-items="Model.Domicilios"
-                            class="form-select" id="selectDomicilio">
+                    <select asp-items="Model.Domicilios" asp-for="DomicilioId"
+                            class="form-select tom-select" id="selectDomicilio">
                         <option value="">-- Seleccionar domicilio --</option>
                     </select>
                     <span asp-validation-for="DomicilioId" class="text-danger small"></span>
@@ -199,8 +199,10 @@
                     document.getElementById('hiddenDomicilioId').value  = auth.domicilioId;
                     document.getElementById('hiddenPropietarioId').value = auth.propietarioId;
 
-                    selectDomicilio.value    = auth.domicilioId;
-                    selectDomicilio.disabled = true;
+                    // selectDomicilio.value    = auth.domicilioId;
+                    selectDomicilio.tomselect.setValue(auth.domicilioId);
+                    // selectDomicilio.disabled = true;
+                    selectDomicilio.tomselect.disable();
                     await cargarPropietarios(auth.domicilioId, auth.propietarioId);
                     selectPropietario.disabled = true;
 
@@ -320,8 +322,8 @@
             document.getElementById('hiddenDomicilioId').value  = domicilioId;
             document.getElementById('hiddenPropietarioId').value = propietarioId;
 
-            selectDomicilio.value    = domicilioId;
-            selectDomicilio.disabled = true;
+            selectDomicilio.tomselect.setValue(domicilioId);
+            selectDomicilio.tomselect.disable();
             await cargarPropietarios(domicilioId, propietarioId);
             selectPropietario.disabled = true;
         });
@@ -342,7 +344,7 @@
             }
         });
 
-                function resetFormulario() {
+        function resetFormulario() {
             formRegistrar.classList.add('d-none');
             seccionEncontrado.classList.add('d-none');
             seccionNuevo.classList.add('d-none');
@@ -350,8 +352,10 @@
             seccionBotones.classList.add('d-none');
             hiddenVisitanteId.value     = '';
             hiddenDni.value             = '';
-            selectDomicilio.value       = '';
-            selectDomicilio.disabled    = false;
+            // selectDomicilio.value       = '';
+            // selectDomicilio.disabled    = false;
+            selectDomicilio.tomselect.clear();
+            selectDomicilio.tomselect.enable();
             selectPropietario.innerHTML = '<option value="">-- Primero seleccioná un domicilio --</option>';
             selectPropietario.disabled  = true;
             document.getElementById('badgeAutorizacion').classList.add('d-none');

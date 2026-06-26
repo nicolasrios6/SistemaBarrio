@@ -11,6 +11,7 @@ namespace SistemaBarrio.ViewModels.Autorizaciones
         public string? Dni { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
+        //public string? Patente { get; set; }
 
         // Datos de la autorización
         [Required(ErrorMessage = "El domicilio es obligatorio")]

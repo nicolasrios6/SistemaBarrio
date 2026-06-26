@@ -124,6 +124,7 @@ namespace SistemaBarrio.Controllers
                         Nombre = vm.Nombre!.Trim(),
                         Apellido = vm.Apellido!.Trim(),
                         Dni = vm.Dni!.Trim(),
+                        //Patente = vm.Patente!.Trim().ToUpper()
                     };
 
                     _context.Visitantes.Add(nuevoVisitante);
