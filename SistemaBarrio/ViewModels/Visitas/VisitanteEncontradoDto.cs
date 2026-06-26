@@ -8,6 +8,7 @@
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
         public string? Dni { get; set; }
+        public string? Patente { get; set; }
 
         public bool TieneAutorizacion { get; set; }
         public List<AutorizacionDto> Autorizaciones { get; set; } = new();

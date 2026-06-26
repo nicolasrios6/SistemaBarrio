@@ -73,6 +73,7 @@ namespace SistemaBarrio.Controllers
                 Nombre = visitante.Nombre,
                 Apellido = visitante.Apellido,
                 Dni = visitante.Dni,
+                Patente = visitante.Patente,
                 TieneAutorizacion = autorizaciones.Any(),
                 Autorizaciones = autorizaciones.Select(a => new AutorizacionDto
                 {
@@ -131,6 +132,12 @@ namespace SistemaBarrio.Controllers
             {
                 // Visitante ya registrado
                 visitanteId = vm.VisitanteId.Value;
+                var visitanteExistente = await _context.Visitantes.FindAsync(visitanteId);
+                if (visitanteExistente != null)
+                {
+                    visitanteExistente.Patente = vm.Patente?.Trim().ToUpper();
+                    await _context.SaveChangesAsync();
+                }
             }
             else
             {
@@ -140,6 +147,7 @@ namespace SistemaBarrio.Controllers
                     Nombre = vm.Nombre!.Trim(),
                     Apellido = vm.Apellido!.Trim(),
                     Dni = vm.Dni!.Trim(),
+                    Patente = vm.Patente!.Trim().ToUpper()
                 };
 
                 _context.Visitantes.Add(nuevoVisitante);
@@ -232,6 +240,7 @@ namespace SistemaBarrio.Controllers
                 Encontrado = true,
                 VisitaId = visita.Id,
                 NombreVisitante = $"{visitante.Apellido}, {visitante.Nombre}",
+                Patente = $"{visitante.Patente}",
                 Domicilio = $"Manzana {visita.Domicilio.Manzana ?? "-"} - Casa {visita.Domicilio.Casa}",
                 Propietario = $"{visita.Propietario.Apellido}, {visita.Propietario.Nombre}",
                 HoraIngreso = visita.FechaHoraIngreso.ToString("HH:mm"),

@@ -48,6 +48,7 @@ namespace SistemaBarrio.Controllers
                 Id = v.Id,
                 NombreCompleto = $"{v.Apellido}, {v.Nombre}",
                 Dni = v.Dni,
+                Patente = v.Patente,
                 CantidadVisitas = v.Visitas.Count,
                 UltimaVisita = v.Visitas
                     .OrderByDescending(vi => vi.FechaHoraIngreso)
@@ -84,6 +85,7 @@ namespace SistemaBarrio.Controllers
                 Id = visitante.Id,
                 NombreCompleto = $"{visitante.Apellido}, {visitante.Nombre}",
                 Dni = visitante.Dni,
+                Patente = visitante.Patente,
                 CantidadVisitas = visitante.Visitas.Count,
                 PrimeraVisita = visitasOrdenadas.LastOrDefault()
                     ?.FechaHoraIngreso.ToString("dd/MM/yyyy"),

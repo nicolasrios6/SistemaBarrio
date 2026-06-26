@@ -6,6 +6,7 @@
         public string Nombre { get; set; }
         public string Apellido { get; set; }
         public string Dni { get; set; }
+        public string? Patente { get; set; }
         public ICollection<Visita> Visitas { get; set; } = new List<Visita>();
         public ICollection<Autorizacion> Autorizaciones { get; set; } = new List<Autorizacion>();
     }

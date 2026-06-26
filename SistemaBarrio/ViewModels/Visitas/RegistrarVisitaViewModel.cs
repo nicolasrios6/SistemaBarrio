@@ -17,6 +17,9 @@ namespace SistemaBarrio.ViewModels.Visitas
         [StringLength(100, ErrorMessage = "Máximo 100 caracteres")]
         public string? Apellido { get; set; }
 
+        [StringLength(7, ErrorMessage = "Máximo 7 caracteres")]
+        public string? Patente { get; set; }
+
         // Datos de la visita
         [Required(ErrorMessage = "El domicilio es obligatorio")]
         [Display(Name = "Domicilio")]

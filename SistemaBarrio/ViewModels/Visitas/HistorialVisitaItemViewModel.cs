@@ -4,6 +4,7 @@
     {
         public string NombreVisitante { get; set; } = string.Empty;
         public string Dni { get; set; } = string.Empty;
+        public string? Patente { get; set; } = string.Empty;
         public string Domicilio { get; set; } = string.Empty;
         public string Propietario { get; set; } = string.Empty;
         public string HoraIngreso { get; set; } = string.Empty;

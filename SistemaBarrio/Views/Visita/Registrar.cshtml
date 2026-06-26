@@ -42,6 +42,14 @@
             <div class="card-body">
                 <p class="mb-1"><strong>Nombre:</strong> <span id="textoNombre"></span></p>
                 <p class="mb-0"><strong>DNI:</strong> <span id="textoDni"></span></p>
+                <div class="mt-2">
+                    <label class="form-label small fw-semibold mb-1">Patente</label>
+                    <input type="text" id="inputPatente" name="Patente"
+                           class="form-control form-control-sm"
+                           placeholder="Ej: AH123AA (opcional)"
+                           maxlength="10"
+                           oninput="this.value = this.value.toUpperCase()" />
+                </div>
 
                 <div id="badgeAutorizacion" class="mt-2 p-2 bg-light rounded border d-none">
                     <p class="mb-1 small text-success fw-semibold">✓ Visitante autorizado</p>
@@ -79,6 +87,12 @@
                     <label class="form-label">Apellido</label>
                     <input asp-for="Apellido" class="form-control" placeholder="Ej: Pérez" />
                     <span asp-validation-for="Apellido" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Patente</label>
+                    <input type="text" id="inputPatente" name="Patente" class="form-control form-control-sm"
+                           placeholder="Ej: AH123AA (opcional)" maxlength="10"
+                           style="text-transform: uppercase" />
                 </div>
             </div>
         </div>
@@ -167,6 +181,7 @@
                 document.getElementById('textoNombre').textContent =
                     `${data.apellido}, ${data.nombre}`;
                 document.getElementById('textoDni').textContent = data.dni;
+                document.getElementById('inputPatente').value = data.patente ?? '';
 
                 // ── Si tiene autorización vigente ──────────────────────
                 if (data.tieneAutorizacion) {
@@ -337,16 +352,15 @@
             hiddenDni.value             = '';
             selectDomicilio.value       = '';
             selectDomicilio.disabled    = false;
-            selectPropietario.innerHTML =
-                '<option value="">-- Primero seleccioná un domicilio --</option>';
+            selectPropietario.innerHTML = '<option value="">-- Primero seleccioná un domicilio --</option>';
             selectPropietario.disabled  = true;
             document.getElementById('badgeAutorizacion').classList.add('d-none');
             document.getElementById('badgeAutorizacionTipo').classList.add('d-none'); // ✅ agregado
-                document.getElementById('hiddenDomicilioId').value  = '';  // ✅
-        document.getElementById('hiddenPropietarioId').value = ''; // ✅
+            document.getElementById('hiddenDomicilioId').value  = '';  // ✅
+            document.getElementById('hiddenPropietarioId').value = ''; // ✅
             document.getElementById('seccionSelectorAutorizacion').classList.add('d-none');
-        document.getElementById('selectAutorizacion').innerHTML =
-            '<option value="">-- Seleccioná el domicilio que viene a visitar --</option>';
+            document.getElementById('selectAutorizacion').innerHTML = '<option value="">-- Seleccioná el domicilio que viene a visitar --</option>';
+            document.getElementById('inputPatente').value = '';
         }
     </script>
 }

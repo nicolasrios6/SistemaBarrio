@@ -44,6 +44,7 @@
                 <tr>
                     <th>Visitante</th>
                     <th>DNI</th>
+                    <th>Patente</th>
                     <th>Domicilio</th>
                     <th>Propietario</th>
                     <th>Ingresó</th>
@@ -62,6 +63,7 @@
                     <tr>
                         <td>@v.Visitante.Apellido, @v.Visitante.Nombre</td>
                         <td>@v.Visitante.Dni</td>
+                        <td>@v.Visitante.Patente</td>
                         <td>Manzana @(v.Domicilio.Manzana ?? "-") - Casa @v.Domicilio.Casa</td>
                         <td>@v.Propietario.Apellido, @v.Propietario.Nombre</td>
                         <td>@v.FechaHoraIngreso.ToString("HH:mm")</td>
@@ -129,6 +131,9 @@
                     <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
                         <div>
                             <p class="mb-1"><strong>${data.nombreVisitante}</strong></p>
+                            <p class="mb-1 small">
+                                <span class="text-muted">Patente:</span> ${data.patente}
+                            </p>
                             <p class="mb-1 small">
                                 <span class="text-muted">Domicilio:</span> ${data.domicilio}
                             </p>
