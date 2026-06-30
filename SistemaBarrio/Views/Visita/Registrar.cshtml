@@ -30,6 +30,7 @@
         <input type="hidden" asp-for="Dni" id="hiddenDni" />
         <input type="hidden" id="hiddenDomicilioId" name="DomicilioId" />    @* ✅ nuevo *@
         <input type="hidden" id="hiddenPropietarioId" name="PropietarioId" /> @* ✅ nuevo *@
+        <input type="hidden" id="hiddenPatente" name="Patente" />
 
         @* ── PASO 2a: Visitante encontrado ───────────────── *@
         <div id="seccionVisitanteEncontrado" class="card mb-3 border-success d-none">
@@ -44,7 +45,7 @@
                 <p class="mb-0"><strong>DNI:</strong> <span id="textoDni"></span></p>
                 <div class="mt-2">
                     <label class="form-label small fw-semibold mb-1">Patente</label>
-                    <input type="text" id="inputPatente" name="Patente"
+                    <input type="text" id="inputPatenteEncontrado" name="Patente"
                            class="form-control form-control-sm"
                            placeholder="Ej: AH123AA (opcional)"
                            maxlength="10"
@@ -90,7 +91,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Patente</label>
-                    <input type="text" id="inputPatente" name="Patente" class="form-control form-control-sm"
+                    <input asp-for="Patente" type="text" id="inputPatenteNuevo" name="Patente" class="form-control form-control-sm"
                            placeholder="Ej: AH123AA (opcional)" maxlength="10"
                            style="text-transform: uppercase" />
                 </div>
@@ -181,7 +182,8 @@
                 document.getElementById('textoNombre').textContent =
                     `${data.apellido}, ${data.nombre}`;
                 document.getElementById('textoDni').textContent = data.dni;
-                document.getElementById('inputPatente').value = data.patente ?? '';
+                document.getElementById('inputPatenteEncontrado').value = data.patente ?? '';
+                document.getElementById('hiddenPatente').value = data.patente ?? '';
 
                 // ── Si tiene autorización vigente ──────────────────────
                 if (data.tieneAutorizacion) {
@@ -260,6 +262,14 @@
             }
         }
 
+        document.getElementById('inputPatenteEncontrado').addEventListener('input', function () {
+            document.getElementById('hiddenPatente').value = this.value;
+        });
+
+        document.getElementById('inputPatenteNuevo').addEventListener('input', function () {
+            document.getElementById('hiddenPatente').value = this.value;
+        });
+
         async function cargarPropietarios(domicilioId, preseleccionarId = null) {
             selectPropietario.innerHTML = '<option value="">-- Cargando... --</option>';
             selectPropietario.disabled  = true;
@@ -307,7 +317,7 @@
             document.getElementById('hiddenPropietarioId').value = this.value; // ✅
         });
 
-            document.getElementById('selectAutorizacion')
+         document.getElementById('selectAutorizacion')
         .addEventListener('change', async function () {
             const opt = this.options[this.selectedIndex];
             if (!opt.value) return;
@@ -364,7 +374,9 @@
             document.getElementById('hiddenPropietarioId').value = ''; // ✅
             document.getElementById('seccionSelectorAutorizacion').classList.add('d-none');
             document.getElementById('selectAutorizacion').innerHTML = '<option value="">-- Seleccioná el domicilio que viene a visitar --</option>';
-            document.getElementById('inputPatente').value = '';
+            document.getElementById('inputPatenteEncontrado').value = '';
+            document.getElementById('inputPatenteNuevo').value = '';
+            document.getElementById('hiddenPatente').value = '';
         }
     </script>
 }

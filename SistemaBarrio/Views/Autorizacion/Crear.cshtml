@@ -39,7 +39,7 @@
             <div class="card-body">
                 <p class="mb-1"><strong>Nombre:</strong> <span id="textoNombre"></span></p>
                 <p class="mb-0"><strong>DNI:</strong> <span id="textoDni"></span></p>
-                <p class="mb-0"><strong>Patente:</strong> <span id="textoPatente"></span></p>
+                @* <p class="mb-0"><strong>Patente:</strong> <span id="textoPatente"></span></p> *@
             </div>
         </div>
 
@@ -73,7 +73,7 @@
                 <div class="mb-3">
                     <label asp-for="DomicilioId" class="form-label"></label>
                     <select asp-for="DomicilioId" asp-items="Model.Domicilios"
-                            class="tom-select" id="selectDomicilio">
+                            class="tom-select tom-select" id="selectDomicilio">
                         <option value="">-- Seleccionar domicilio --</option>
                     </select>
                     <span asp-validation-for="DomicilioId" class="text-danger small"></span>
